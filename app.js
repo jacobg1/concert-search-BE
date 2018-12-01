@@ -4,10 +4,11 @@ const express = require('express'),
 
 const port = process.env.PORT || 3000
 
+const getMeta = require('./routes/getMeta')
+
+
 app.use(bodyParser.json())
 
-app.get('/', function (req, res, next)  {
-    res.send('hello world')
-})
+app.use(getMeta)
 
 app.listen(port, () => console.log(`Listening on port ${port}!`))
