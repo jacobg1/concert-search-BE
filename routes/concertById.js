@@ -29,7 +29,7 @@ router.get('/concert/:id', function( req, res, next ) {
 
         // add the built play url as an object key
         mp3Tracks.forEach( track => {
-            track.playUrl = base + track.name
+            track.playUrl = base + track.name.replace(/ /g, '%20')
         });
 
         // build response object
