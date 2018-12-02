@@ -4,11 +4,12 @@ const express = require('express'),
 
 const port = process.env.PORT || 3000
 
-const getMeta = require('./routes/getMeta')
+const getMeta = require('./routes/getMeta'),
+      concertById = require('./routes/concertById')
 
 
-app.use(bodyParser.json())
+// app.use(bodyParser.json())
 
-app.use(getMeta)
+app.use(getMeta, concertById)
 
 app.listen(port, () => console.log(`Listening on port ${port}!`))
