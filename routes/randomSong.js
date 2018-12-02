@@ -10,7 +10,7 @@ const express = require('express'),
     });
 
 
-router.get('/random/:artistName/:artistYear?', function (req, res, next) {
+router.get('/random/:artistName/:artistYear?', function ( req, res, next ) {
     
     // take in and format search params, year is optional so
     // only add year if it exists as part of search
@@ -21,7 +21,7 @@ router.get('/random/:artistName/:artistYear?', function (req, res, next) {
 
     // build meta search url, this will return ids
     // for use in metadata search
-    let url = 'https://archive.org/advancedsearch.php?q=creator%3A' + searchParams + '&fl%5B%5D=identifier&fl%5B%5D=mediatype&fl%5B%5D=title&&fl%5B%5D=description&fl%5B%5D=year&sort%5B%5D=year+asc&sort%5B%5D=&sort%5B%5D=&rows=150&page=&output=json'
+    let url = 'https://archive.org/advancedsearch.php?q=creator%3A' + searchParams + '&fl%5B%5D=identifier&fl%5B%5D=mediatype&fl%5B%5D=title&&fl%5B%5D=description&fl%5B%5D=year&sort%5B%5D=year+asc&sort%5B%5D=&sort%5B%5D=&rows=1000&page=&output=json'
     
     // check if exists in redis storage
     client.exists( searchParams, function ( err, reply ) {
@@ -72,43 +72,43 @@ router.get('/random/:artistName/:artistYear?', function (req, res, next) {
                             url: concertUrl,
                             dataType: 'jsonp'
                         })
-                            .then(( response ) => {
+                        .then(( response ) => {
                               
-                                // build playback url base
-                                let { d1, dir } = response.data
-                                let base = 'https://' + d1 + dir + '/'
+                            // build playback url base
+                            let { d1, dir } = response.data
+                            let base = 'https://' + d1 + dir + '/'
 
-                                // filter results for correct audio format
-                                let mp3Tracks = response.data.files.filter( function ( song ) {
-                                    return song.format === 'VBR MP3'
-                                })
-
-                                // add the built play url as an object key
-                                mp3Tracks.forEach( track => {
-                                    track.playUrl = base + track.name.replace(/ /g, '%20')
-                                });
-
-                                // build response object
-                                let concertObject = {}
-
-                                // add metadata
-                                concertObject.metaData = response.data.metadata
-
-                                // add track list
-                                concertObject.trackList = mp3Tracks
-
-                                // save concert object in redis cache
-                                client.set( randomId, JSON.stringify( concertObject ))
-
-                                // send result to front end
-                                let { trackList } = concertObject
-                                let randomTrack = trackList[ Math.floor( Math.random() * trackList.length )]
-                                res.send( randomTrack )
-
+                            // filter results for correct audio format
+                            let mp3Tracks = response.data.files.filter( function ( song ) {
+                                return song.format === 'VBR MP3'
                             })
-                            .catch(( error ) => {
-                                console.log( error )
-                            })
+
+                            // add the built play url as an object key
+                            mp3Tracks.forEach( track => {
+                                track.playUrl = base + track.name.replace(/ /g, '%20')
+                            });
+
+                            // build response object
+                            let concertObject = {}
+
+                            // add metadata
+                            concertObject.metaData = response.data.metadata
+
+                            // add track list
+                            concertObject.trackList = mp3Tracks
+
+                            // save concert object in redis cache
+                            client.set( randomId, JSON.stringify( concertObject ))
+
+                            // send result to front end
+                            let { trackList } = concertObject
+                            let randomTrack = trackList[ Math.floor( Math.random() * trackList.length )]
+                            res.send( randomTrack )
+
+                        })
+                        .catch(( error ) => {
+                            console.log( error )
+                        })
                     }
                 })        
             })
@@ -125,8 +125,12 @@ router.get('/random/:artistName/:artistYear?', function (req, res, next) {
             })
             .then(( response ) => {
 
+                // filter results for concert
+                let concertsOnly = response.data.response.docs.filter(( concert ) => {
+                    return concert.mediatype === 'etree'
+                })
                 // set hash in redis storage
-                client.set( searchParams, JSON.stringify( response.data.response.docs ))
+                client.set(searchParams, JSON.stringify( concertsOnly ))
                 
                 // get random concert
                 let responseData = response.data.response.docs
@@ -146,9 +150,9 @@ router.get('/random/:artistName/:artistYear?', function (req, res, next) {
                             if ( error ) throw error
 
                             // send random track
-                            let parseTrackResult = JSON.parse(result).trackList
-                            let randomTrack = parseTrackResult[Math.floor(Math.random() * parseTrackResult.length)]
-                            res.send(randomTrack)
+                            let parseTrackResult = JSON.parse( result ).trackList
+                            let randomTrack = parseTrackResult[ Math.floor(Math.random() * parseTrackResult.length )]
+                            res.send( randomTrack )
                         })
                     } else {
                         console.log('doesnt exist need to make api call')
@@ -160,7 +164,7 @@ router.get('/random/:artistName/:artistYear?', function (req, res, next) {
                             url: concertUrl,
                             dataType: 'jsonp'
                         })
-                        .then((response) => {
+                        .then(( response ) => {
 
                             // build playback url base
                             let { d1, dir } = response.data
@@ -186,12 +190,14 @@ router.get('/random/:artistName/:artistYear?', function (req, res, next) {
                             concertObject.trackList = mp3Tracks
 
                             // save concert object in redis cache
-                            client.set( randomConcert, JSON.stringify(concertObject))
+                            client.set( randomConcert, JSON.stringify( concertObject ))
 
                             // send result to front end
                             let { trackList } = concertObject
-                            let randomTrack = trackList[Math.floor(Math.random() * trackList.length)]
-                            res.send(randomTrack)
+                            let randomTrack = trackList[ Math.floor( Math.random() * trackList.length )]
+
+                            // send random track
+                            res.send( randomTrack )
 
                         })
                         .catch((error) => {
