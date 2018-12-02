@@ -38,7 +38,6 @@ router.get('/random-song/:id', function ( req, res, next ) {
                 // send result
                 res.send( randomTrack )
 
-    
             })
 
         } else {
@@ -51,43 +50,47 @@ router.get('/random-song/:id', function ( req, res, next ) {
                 url: url,
                 dataType: 'jsonp'
             })
-                .then(( response ) => {
+            .then(( response ) => {
 
-                    // build playback url base
-                    let { d1, dir } = response.data
-                    let base = 'https://' + d1 + dir + '/'
+                // build playback url base
+                let { d1, dir } = response.data
+                let base = 'https://' + d1 + dir + '/'
 
-                    // filter results for correct audio format
-                    let mp3Tracks = response.data.files.filter(function ( song ) {
-                        return song.format === 'VBR MP3'
-                    })
+                // filter results for correct audio format
+                let mp3Tracks = response.data.files.filter(function ( song ) {
+                    return song.format === 'VBR MP3'
+                })
 
-                    // add the built play url as an object key
-                    mp3Tracks.forEach( track => {
-                        track.playUrl = base + track.name.replace(/ /g, '%20')
-                    });
+                // add the built play url as an object key
+                mp3Tracks.forEach( track => {
+                    track.playUrl = base + track.name.replace(/ /g, '%20')
+                });
 
-                    // build response object
-                    let concertObject = {}
+                // build response object
+                let concertObject = {}
 
-                    // add metadata
-                    concertObject.metaData = response.data.metadata
+                // add metadata
+                concertObject.metaData = response.data.metadata
 
-                    // add track list
-                    concertObject.trackList = mp3Tracks
+                // add track list
+                concertObject.trackList = mp3Tracks
 
-                    // save concert object in redis cache
-                    client.set( concertId, JSON.stringify( concertObject ))
+                // save concert object in redis cache
+                client.set( concertId, JSON.stringify( concertObject ))
 
-                    // send result to front end
-                    let { trackList } = concertObject
-                    let randomTrack = trackList[ Math.floor( Math.random() * trackList.length )]
+                // send result to front end
+                let { trackList } = concertObject
+                let randomTrack = trackList[ Math.floor( Math.random() * trackList.length )]
                     
-                    res.send( randomTrack )
+                // send random track    
+                res.send( randomTrack )
 
                 })
                 .catch(( error ) => {
+
+                    // handle errors
                     console.log( error )
+
                 })
         }
     })
