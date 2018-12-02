@@ -1,6 +1,14 @@
 const express = require('express'),
       router = express.Router(),
       axios = require('axios')
+      redis = require('redis'),
+      client = redis.createClient()
+
+    // handle redis errors
+    client.on('error', function ( err ) {
+        console.log('Error ' + err);
+    });
+
 
 router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
     
@@ -13,22 +21,49 @@ router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
 
     // build meta search url, this will return ids
     // for use in metadata search
-    let url = 'https://archive.org/advancedsearch.php?q=creator%3A' + searchParams + '&fl%5B%5D=identifier&fl%5B%5D=mediatype&fl%5B%5D=title&&fl%5B%5D=description&fl%5B%5D=year&sort%5B%5D=year+asc&sort%5B%5D=&sort%5B%5D=&rows=5000&page=&output=json'
+    let url = 'https://archive.org/advancedsearch.php?q=creator%3A' + searchParams + '&fl%5B%5D=identifier&fl%5B%5D=mediatype&fl%5B%5D=title&&fl%5B%5D=description&fl%5B%5D=year&sort%5B%5D=year+asc&sort%5B%5D=&sort%5B%5D=&rows=2000&page=&output=json'
     
-    // make api call to get ids
-    axios({
-        method: 'GET',
-        url: url,
-        dataType: 'jsonp',
+    // check if exists in redis storage
+    client.exists( searchParams, function ( err, reply ) {
+
+        // exists() returns 1 if exists
+        if ( reply === 1) {
+
+            console.log('fetching from redis store')
+
+            // get result from redis instead of making api call
+            client.get( searchParams, function ( error, result ) {
+
+                // handle errors
+                if ( error ) throw error
+
+                    // send result
+                    res.send(JSON.parse( result ))
+            })
+
+        } else {
+
+            console.log('fetching from api')
+
+            // make api call to get ids
+            axios({
+                method: 'GET',
+                url: url,
+                dataType: 'jsonp',
+            })
+            .then(( response ) => {
+
+                // set hash in redis storage
+                client.set( searchParams, JSON.stringify( response.data.response.docs ))
+                
+                // send result
+                res.send( response.data.response.docs )
+            })
+            .catch(( error ) => {
+                console.log( error )
+            })
+        }
     })
-    .then((response) => {
-        res.send(response.data)
-    })
-    .catch((error) => {
-        console.log(error)
-    })
-   
-    
 })      
 
 module.exports = router
