@@ -18,7 +18,7 @@ router.get('/concert/:id', function( req, res, next ) {
     let url = 'https://archive.org/metadata/' + concertId
 
     // check if exists in redis storage
-    client.exists( concertId, function ( err, reply) {
+    client.exists( concertId, function ( err, reply ) {
 
         // exists() returns 1 if exists
         if ( reply === 1) {
@@ -26,7 +26,7 @@ router.get('/concert/:id', function( req, res, next ) {
             console.log('fetching from redis store')
 
             // get result from redis instead of making api call
-            client.get( concertId, function ( error, result) {
+            client.get( concertId, function ( error, result ) {
 
                 // handle errors
                 if ( error ) throw error
@@ -36,7 +36,7 @@ router.get('/concert/:id', function( req, res, next ) {
             })
 
         } else {
-            
+
             console.log('fetching from api')
 
             // make api call
