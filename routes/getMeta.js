@@ -2,7 +2,8 @@ const express = require('express'),
       router = express.Router(),
       axios = require('axios')
       redis = require('redis'),
-      client = redis.createClient()
+      client = redis.createClient(),
+      chunkObject = require('./utils/chunkObject')
 
     // handle redis errors
     client.on('error', function ( err ) {
@@ -22,7 +23,7 @@ router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
 
     // build meta search url, this will return ids
     // for use in metadata search
-    let url = 'https://archive.org/advancedsearch.php?q=creator%3A' + searchParams + '&fl%5B%5D=identifier&fl%5B%5D=mediatype&fl%5B%5D=title&&fl%5B%5D=description&fl%5B%5D=year&sort%5B%5D=year+asc&sort%5B%5D=&sort%5B%5D=&rows=1000&page=&output=json'
+    let url = 'https://archive.org/advancedsearch.php?q=creator%3A' + searchParams + '&fl%5B%5D=identifier&fl%5B%5D=mediatype&fl%5B%5D=title&&fl%5B%5D=description&fl%5B%5D=year&sort%5B%5D=year+asc&sort%5B%5D=&sort%5B%5D=&rows=20000&page=&output=json'
     
     // check if exists in redis storage
     client.exists( artist, function ( err, reply ) {
@@ -52,8 +53,12 @@ router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
                         res.send( filterByYear )
 
                     } else {
+                        
+                        // Split in group of 3 items
+                        let chunkResult = chunkObject( parseResult, 50 )
+                        
                         // send result
-                        res.send( parseResult )
+                        res.send( chunkResult )
                     }
             })
 
@@ -88,7 +93,7 @@ router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
                     res.send( filterByYear )
 
                 } else {
-
+                    console.log(concertsOnly.length)
                     // send result
                     res.send( concertsOnly )
                 }
