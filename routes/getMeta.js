@@ -2,7 +2,7 @@ const express = require('express'),
       router = express.Router(),
       axios = require('axios')
       redis = require('redis'),
-      client = redis.createClient(),
+      client = redis.createClient('redis://h:p5abe63fe831a9a701b6199741a9078488e14f06ec3c1f651dbe8eef30d4456b3@ec2-54-158-129-107.compute-1.amazonaws.com:40909'),
       chunkObject = require('./utils/chunkObject')
 
     // handle redis errors
