@@ -49,13 +49,16 @@ router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
                             return item.year === year
                         })
 
+                        // Split in group of 10 items
+                        let chunkResult = chunkObject( filterByYear, 25 )
+
                         // send year filtered result
-                        res.send( filterByYear )
+                        res.send( chunkResult )
 
                     } else {
                         
-                        // Split in group of 3 items
-                        let chunkResult = chunkObject( parseResult, 50 )
+                        // Split in group of 50 items
+                        let chunkResult = chunkObject( parseResult, 25 )
                         
                         // send result
                         res.send( chunkResult )
