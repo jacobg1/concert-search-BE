@@ -71,7 +71,7 @@ router.get('/concert/:id', function( req, res, next ) {
                 concertObject.trackList = mp3Tracks
 
                 // save concert object in redis cache
-                client.set( concertId, JSON.stringify( concertObject ))
+                // client.set( concertId, JSON.stringify( concertObject ))
 
                 // send result to front end
                 res.send( concertObject )
