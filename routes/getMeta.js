@@ -4,10 +4,10 @@ const express = require('express'),
       redis = require('redis'),
       chunkObject = require('./utils/chunkObject')
 
-var rtg = require("url").parse('redis://h:p5abe63fe831a9a701b6199741a9078488e14f06ec3c1f651dbe8eef30d4456b3@ec2-54-158-129-107.compute-1.amazonaws.com:40909');
-var client = require("redis").createClient(rtg.port, rtg.hostname);
+// var rtg = require("url").parse('redis://h:p5abe63fe831a9a701b6199741a9078488e14f06ec3c1f651dbe8eef30d4456b3@ec2-54-158-129-107.compute-1.amazonaws.com:40909');
+// var client = require("redis").createClient(rtg.port, rtg.hostname);
 
-client.auth(rtg.auth.split(":")[1]);
+// client.auth(rtg.auth.split(":")[1]);
     // handle redis errors
     // client.on('error', function ( err ) {
     //     console.log('Error ' + err);
@@ -29,46 +29,46 @@ router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
     let url = 'https://archive.org/advancedsearch.php?q=creator%3A' + searchParams + '&fl%5B%5D=identifier&fl%5B%5D=mediatype&fl%5B%5D=title&&fl%5B%5D=description&fl%5B%5D=year&sort%5B%5D=year+asc&sort%5B%5D=&sort%5B%5D=&rows=20000&page=&output=json'
     
     // check if exists in redis storage
-    client.exists( artist, function ( err, reply ) {
+    // client.exists( artist, function ( err, reply ) {
 
-        // exists() returns 1 if exists
-        if ( reply === 1 ) {
+    //     // exists() returns 1 if exists
+    //     if ( reply === 1 ) {
 
-            console.log('fetching from redis store')
+            // console.log('fetching from redis store')
 
             // get result from redis instead of making api call
-            client.get( artist, function ( error, result ) {
+            // client.get( artist, function ( error, result ) {
 
-                // decode result from JSON so that it can be manipulated
-                let parseResult = JSON.parse( result )
+            //     // decode result from JSON so that it can be manipulated
+            //     let parseResult = JSON.parse( result )
 
-                // handle errors
-                if ( error ) throw error
+            //     // handle errors
+            //     if ( error ) throw error
 
-                    // if year exists in params, filter by year param
-                    if( year ) {
+            //         // if year exists in params, filter by year param
+            //         if( year ) {
 
-                        let filterByYear = parseResult.filter(( item ) => {
-                            return item.year === year
-                        })
+            //             let filterByYear = parseResult.filter(( item ) => {
+            //                 return item.year === year
+            //             })
 
-                        // Split in group of 10 items
-                        let chunkResult = chunkObject( filterByYear, 25 )
+            //             // Split in group of 10 items
+            //             let chunkResult = chunkObject( filterByYear, 25 )
 
-                        // send year filtered result
-                        res.send( chunkResult )
+            //             // send year filtered result
+            //             res.send( chunkResult )
 
-                    } else {
+            //         } else {
                         
-                        // Split in group of 50 items
-                        let chunkResult = chunkObject( parseResult, 25 )
+            //             // Split in group of 50 items
+            //             let chunkResult = chunkObject( parseResult, 25 )
                         
-                        // send result
-                        res.send( chunkResult )
-                    }
-            })
+            //             // send result
+            //             res.send( chunkResult )
+            //         }
+            // })
 
-        } else {
+        // } else {
 
             console.log('fetching from api')
 
@@ -107,8 +107,8 @@ router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
             .catch(( error ) => {
                 console.log( error )
             })
-        }
-    })
+    //     }
+    // })
 })      
 
 module.exports = router
