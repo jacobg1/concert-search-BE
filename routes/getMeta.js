@@ -5,13 +5,13 @@ const express = require('express'),
       chunkObject = require('./utils/chunkObject')
 
 var rtg = require("url").parse('redis://h:p5abe63fe831a9a701b6199741a9078488e14f06ec3c1f651dbe8eef30d4456b3@ec2-54-158-129-107.compute-1.amazonaws.com:40909');
-var redis = require("redis").createClient(rtg.port, rtg.hostname);
+var client = require("redis").createClient(rtg.port, rtg.hostname);
 
-redis.auth(rtg.auth.split(":")[1]);
+client.auth(rtg.auth.split(":")[1]);
     // handle redis errors
-    client.on('error', function ( err ) {
-        console.log('Error ' + err);
-    });
+    // client.on('error', function ( err ) {
+    //     console.log('Error ' + err);
+    // });
 
 
 router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
