@@ -28,7 +28,7 @@ router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
     // for use in metadata search
     let url = 'https://archive.org/advancedsearch.php?q=creator%3A' + searchParams + '&fl%5B%5D=identifier&fl%5B%5D=mediatype&fl%5B%5D=title&&fl%5B%5D=description&fl%5B%5D=year&sort%5B%5D=year+asc&sort%5B%5D=&sort%5B%5D=&rows=20000&page=&output=json'
     
-    // check if exists in redis storage
+    // // check if exists in redis storage
     // client.exists( artist, function ( err, reply ) {
 
     //     // exists() returns 1 if exists
@@ -70,7 +70,7 @@ router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
 
         // } else {
 
-            console.log('fetching from api')
+            // console.log('fetching from api')
 
             // make api call to get ids
             axios({
@@ -86,7 +86,7 @@ router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
                 })
 
                 // set hash in redis storage
-                client.set(artist, JSON.stringify(concertsOnly))
+                // client.set(artist, JSON.stringify(concertsOnly))
 
                 // if year exists in params, filter by year param
                 if ( year ) {
@@ -96,12 +96,19 @@ router.get('/meta/:artistName/:artistYear?', function (req, res, next) {
                     })
 
                     // send year filtered result
-                    res.send( filterByYear )
+                    let chunkResult = chunkObject(filterByYear, 25)
+
+                    // send year filtered result
+                    res.send(chunkResult)
 
                 } else {
                     console.log(concertsOnly.length)
                     // send result
-                    res.send( concertsOnly )
+                    // Split in group of 50 items
+                    let chunkResult = chunkObject(concertsOnly, 25)
+
+                    // send result
+                    res.send(chunkResult)
                 }
             })
             .catch(( error ) => {
