@@ -46,7 +46,6 @@ router.get('/random-song/:id', function (req, res, next) {
 			// add track list
 			concertObject.trackList = mp3Tracks
 
-
 			// send result to front end
 			let {
 				trackList
