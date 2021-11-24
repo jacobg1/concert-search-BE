@@ -1,7 +1,7 @@
 {
   "name": "crunch-be",
   "version": "1.0.0",
-  "description": "back end for crunchFM",
+  "description": "back end for concert-search",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -13,10 +13,11 @@
   "author": "Jacob Greenwald",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.24.0",
     "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
     "express": "^4.16.4",
-    "redis": "^2.8.0"
+    "lodash.chunk": "^4.2.0"
   },
   "devDependencies": {
     "nodemon": "^1.18.7"

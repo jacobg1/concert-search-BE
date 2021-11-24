@@ -1,13 +1,6 @@
 const express = require('express'),
     router = express.Router(),
-    axios = require('axios'),
-    redis = require('redis'),
-    client = redis.createClient()
-
-    // handle redis errors
-    client.on('error', function ( err ) {
-        console.log('Error ' + err);
-    });
+    axios = require('axios')
 
 router.get('/concert/:id', function( req, res, next ) {
     
@@ -17,27 +10,7 @@ router.get('/concert/:id', function( req, res, next ) {
     // build search url
     let url = 'https://archive.org/metadata/' + concertId
 
-    // check if exists in redis storage
-    client.exists( concertId, function ( err, reply ) {
-
-        // exists() returns 1 if exists
-        if ( reply === 1) {
-
-            console.log('fetching from redis store')
-
-            // get result from redis instead of making api call
-            client.get( concertId, function ( error, result ) {
-
-                // handle errors
-                if ( error ) throw error
-
-                // send result
-                res.send(JSON.parse( result ))
-            })
-
-        } else {
-
-            console.log('fetching from api')
+    console.log('fetching from api')
 
             // make api call
             axios({
@@ -70,18 +43,13 @@ router.get('/concert/:id', function( req, res, next ) {
                 // add track list
                 concertObject.trackList = mp3Tracks
 
-                // save concert object in redis cache
-                client.set( concertId, JSON.stringify( concertObject ))
-
                 // send result to front end
                 res.send( concertObject )
 
             })
             .catch(( error ) => {
                 console.log( error )
-            })
-        }
-    })        
+            })        
 })
 
 module.exports = router
